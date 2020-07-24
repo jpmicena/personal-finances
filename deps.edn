@@ -1,0 +1,20 @@
+{:paths ["resources" "src"]
+ :deps {org.clojure/clojure {:mvn/version "1.10.1"}
+
+        org.xerial/sqlite-jdbc {:mvn/version "3.23.1"}
+        seancorfield/next.jdbc {:mvn/version "1.0.445"}
+        com.stuartsierra/component {:mvn/version "1.0.0"}}
+ :aliases
+ {:test {:extra-paths ["test"]}
+  :runner {:extra-deps
+           {com.cognitect/test-runner
+            {:git/url "https://github.com/cognitect-labs/test-runner"
+             :sha "3cb0a9daf1cb746259dc8309b218f9211ad3b33b"}}
+           :main-opts ["-m" "cognitect.test-runner"]}
+  :eastwood {:extra-deps {jonase/eastwood {:mvn/version "RELEASE"}}
+             :main-opts ["-m" "eastwood.lint" "{:source-paths,[\"src\"],:test-paths,[\"test\"]}"]}
+  :lint {:extra-deps {com.jameslaverack/cljfmt-runner
+                      {:git/url "https://github.com/JamesLaverack/cljfmt-runner"
+                       :sha "97960e9a6464935534b5a6bab529e063d0027128"}}
+         :main-opts ["-m" "cljfmt-runner.check"]}
+  :lint/fix {:main-opts ["-m" "cljfmt-runner.fix"]}}}
