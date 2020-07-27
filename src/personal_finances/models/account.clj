@@ -1,4 +1,4 @@
-(ns personal-finances.model.account
+(ns personal-finances.models.account
   (:require [next.jdbc.sql :as sql]))
 
 (def categories ["asset" "liability" "income" "expense"])

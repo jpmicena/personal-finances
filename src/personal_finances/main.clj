@@ -8,6 +8,12 @@
    :database    c-db/setup
    :application c-app/setup))
 
+(defn -main []
+  (while true
+    (println "Starting...")
+    (let [x (read-line)]
+      (println "Typed" (+ 1 (Integer/parseInt x))))))
+
 (comment
 (alter-var-root #'system component/start)
 (alter-var-root #'system component/stop)
