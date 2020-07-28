@@ -1,14 +1,15 @@
 (ns personal-finances.cmd
   (:require [clojure.string     :as string]
-            [clojure.spec.alpha :as s]))
+            [clojure.spec.alpha :as s]
+            [personal-finances.controllers.account :as ctrl-acc]))
 
 (s/def ::name (s/coll-of string?))
 (s/def ::fn   fn?)
-(s/def ::args-spec s/get-spec)
+(s/def ::args-spec s/regex?)
 (s/def ::handler (s/keys :req [::name ::fn ::args-spec]))
 (s/def ::handler-list (s/coll-of ::handler))
 
-(def handlers [])
+(def handlers [ctrl-acc/account-add-handler])
 
 (defn- get-cmd-map
   "Mapping of existing commands"
@@ -31,21 +32,19 @@
               (nil? cmd)                (throw (Exception. "Command not found")) ;; TODO: Replace with helper for not found commands
               :else                     (recur parsing (rest tokens)))))))
 
-(defn- apply-cmd!
+(defn- apply-cmd
   "Tries to apply the parsed-cmd, conforms args to args-spec"
-  [[{:keys [::fn ::args-spec]} args]]
-  (let [conformed-args (s/conform args-spec args)]
+  [[{:keys [::fn ::args-spec]} args] system]
+  (let [conformed-args (s/conform args-spec (conj (vec args) system))]
     (if (s/invalid? conformed-args)
       (s/explain args-spec args)
       (fn conformed-args))))
 
-(defn execute-cmd!
-  [line cmd-map]
+(defn execute-cmd
+  [line system]
   (try
-    (-> line (parse-cmd! cmd-map) apply-cmd!)
+    (-> line
+        (parse-cmd! cmd-map)
+        (apply-cmd system))
     (catch Exception e
       (println (ex-message e)))))
-
-(comment
-(execute-cmd! "account" cmd-map)
-)
