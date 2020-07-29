@@ -9,7 +9,9 @@
 (s/def ::handler (s/keys :req [::name ::fn ::args-spec]))
 (s/def ::handler-list (s/coll-of ::handler))
 
-(def handlers [ctrl-acc/account-add-handler])
+(def handlers [ctrl-acc/account-add-handler
+               ctrl-acc/account-list-handler
+               ctrl-acc/account-remove-handler])
 
 (defn- get-cmd-map
   "Mapping of existing commands"
@@ -19,9 +21,11 @@
 
 (def ^:private cmd-map (get-cmd-map handlers))
 
+(identity cmd-map)
+
 (defn- parse-cmd!
   "Parse text in command line, returns a vector with [handler [args]]"
-  [line cmd-map]
+  [line]
   (let [tokens (string/split line #" ")]
     (loop [parsed []
            to-parse tokens]
@@ -37,14 +41,17 @@
   [[{:keys [::fn ::args-spec]} args] system]
   (let [conformed-args (s/conform args-spec (conj (vec args) system))]
     (if (s/invalid? conformed-args)
-      (s/explain args-spec args)
+      (s/explain args-spec args) ;; Strangely I need to do this so the print is not lagging
       (fn conformed-args))))
 
 (defn execute-cmd
   [line system]
   (try
     (-> line
-        (parse-cmd! cmd-map)
+        parse-cmd!
         (apply-cmd system))
     (catch Exception e
       (println (ex-message e)))))
+
+(comment
+(parse-cmd! "account list"))

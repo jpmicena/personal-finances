@@ -14,10 +14,10 @@
                  :database    c-db/setup
                  :application c-app/setup)
         started-system (component/start system)]
-  (println (-> started-system :database :datasource)) ; this is probably wrong
   (while true
     (let [line (read-line)]
-      (cmd/execute-cmd line started-system)))))
+      (cmd/execute-cmd line started-system)
+      (flush)))))
 
 (comment
 (alter-var-root #'system component/start)

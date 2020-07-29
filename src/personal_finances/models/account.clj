@@ -11,7 +11,7 @@
   [acc-id db-conn]
   (sql/delete! db-conn :account {:id acc-id}))
 
-(defn list-accounts
+(defn read-accounts
   [db-conn]
   (sql/query db-conn
              ["SELECT id, category, name FROM account ORDER BY name ASC"]))
@@ -26,12 +26,9 @@
 (def my-system personal-finances.main/system)
 (def example-account {:category "liability"
                       :name     "teste2"})
-(list-accounts ((:database my-system)))
 (insert-account! example-account ((:database my-system)))
 (insert-account! (dissoc example-account :name) ((:database my-system)))
 (get-account-by-name "teste2" ((:database my-system)))
 (delete-account! 4 ((:database my-system)))
-(require '[clojure.pprint :as pp])
-(pp/print-table (list-accounts ((:database my-system))))
 )
 
