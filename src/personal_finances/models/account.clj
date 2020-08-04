@@ -13,13 +13,12 @@
 
 (defn read-accounts
   [db-conn]
-  (sql/query db-conn
-             ["SELECT id, category, name FROM account ORDER BY name ASC"]))
+  (sql/query db-conn ["SELECT id, category, name FROM account ORDER BY name ASC"]))
 
 (defn get-account-by-name
-  [name db-conn]
+  [category name db-conn]
   (-> db-conn
-      (sql/query [(str "SELECT id, category, name FROM account WHERE name = '" name "'")])
+      (sql/query ["SELECT id, category, name FROM account WHERE category = ? AND name = ?" category name])
       first))
 
 (comment
@@ -28,7 +27,8 @@
                       :name     "teste2"})
 (insert-account! example-account ((:database my-system)))
 (insert-account! (dissoc example-account :name) ((:database my-system)))
-(get-account-by-name "teste2" ((:database my-system)))
+(get-account-by-name "liability" "teste1" ((:database my-system)))
 (delete-account! 4 ((:database my-system)))
+(read-accounts ((:database my-system)))
 )
 
