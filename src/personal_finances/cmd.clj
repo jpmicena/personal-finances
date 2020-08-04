@@ -21,8 +21,6 @@
 
 (def ^:private cmd-map (get-cmd-map handlers))
 
-(identity cmd-map)
-
 (defn- parse-cmd!
   "Parse text in command line, returns a vector with [handler [args]]"
   [line]
