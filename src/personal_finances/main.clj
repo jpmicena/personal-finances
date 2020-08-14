@@ -15,9 +15,10 @@
                  :application comp-app/setup)
         started-system (component/start system)]
   (while true
+    (print "$ ")
+    (flush)
     (let [line (read-line)]
-      (cmd/execute-cmd line started-system)
-      (flush)))))
+      (cmd/execute-cmd line started-system)))))
 
 (comment
 (alter-var-root #'system component/start)
