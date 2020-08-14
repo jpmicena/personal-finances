@@ -32,7 +32,7 @@
                     :description "teste teste"
                     :value 10.23
                     :post_date "2020-08-03"
-                    :planned_date "2020-08-04"
+                    :due_date "2020-08-04"
                     })
 (insert-entry! example-entry ((:database system)))
 (delete-entry! 3 ((:database system)))
