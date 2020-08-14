@@ -7,7 +7,7 @@
 ;; TODO: better error message when it doesn't find the account
 
 (defn- add-entry
-  [increasing-account decreasing-account description value post-date planned-date db]
+  [increasing-account decreasing-account description value post-date due-date db]
   (let [db-conn (db)
         i-acc   (-> increasing-account l-coe/account-like (c-acc/get-account db) :success :account/id)
         d-acc   (-> decreasing-account l-coe/account-like (c-acc/get-account db) :success :account/id)
@@ -16,7 +16,7 @@
                  :description description
                  :value value
                  :post_date post-date
-                 :planned_date planned-date}]
+                 :due_date due-date}]
   (try {:success
         (str
           "Entry added. id: " (-> entry
