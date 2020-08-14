@@ -9,4 +9,5 @@ create table entry (
 
   foreign key(increasing_account_id) references account(id),
   foreign key(decreasing_account_id) references account(id)
+  on delete cascade
 )

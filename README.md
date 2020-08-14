@@ -31,3 +31,6 @@ If you sum the balances of all accounts, it should always be zero.
   - Credit card bills (attach entries, control payments, etc.)
   - Routines (fixed payments, execute future entries, etc.)
   - txt inputs (for instance, executing multiple commands)
+  - Add constraints on foreign keys (e. g., block account deletion if there's an entry associated)
+  - Use `spec coerce` lib to coerce cmd arguments
+  - Create helpers to format command returns

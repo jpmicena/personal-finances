@@ -1,18 +1,18 @@
 (ns personal-finances.main
   (:require [com.stuartsierra.component               :as component]
-            [personal-finances.components.database    :as c-db]
-            [personal-finances.components.application :as c-app]
+            [personal-finances.components.database    :as comp-db]
+            [personal-finances.components.application :as comp-app]
             [personal-finances.cmd                    :as cmd]))
 
 (def system
   (component/system-map
-   :database    c-db/setup
-   :application c-app/setup))
+   :database    comp-db/setup
+   :application comp-app/setup))
 
 (defn -main []
   (let [system (component/system-map
-                 :database    c-db/setup
-                 :application c-app/setup)
+                 :database    comp-db/setup
+                 :application comp-app/setup)
         started-system (component/start system)]
   (while true
     (let [line (read-line)]

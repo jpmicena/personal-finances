@@ -2,7 +2,7 @@
   (:require [clojure.string                      :as string]
             [clojure.spec.alpha                  :as s]
             [personal-finances.format            :as fmt]
-            [personal-finances.adapters.coercion :as a-coe]
+            [personal-finances.logic.coercion    :as l-coe]
             [personal-finances.models.account    :as m-acc]))
 
 (defn- add-account
@@ -35,6 +35,12 @@
                (-> (m-acc/delete-account! id db-conn) :next.jdbc/update-count))}
          (catch Exception e {:failure (ex-message e)}))))
 
+(defn get-account
+  [acc db]
+  (let [db-conn (db)]
+    (try {:success (m-acc/read-account-one acc db-conn)}
+         (catch Exception e {:failure (ex-message e)}))))
+
 ;; Command logic (function + handler)
 
 (defn- account-add-cmd
@@ -49,7 +55,7 @@
 
 (defn- account-remove-cmd
   [{:keys [id system]}]
-  (let [coerced-id (a-coe/int-like id)]
+  (let [coerced-id (l-coe/int-like id)]
     (-> coerced-id (remove-account (:database system)) first val println)))
 
 (def account-add-handler
@@ -67,5 +73,5 @@
 (def account-remove-handler
   #:personal-finances.cmd{:name ["account" "remove"]
                           :fn account-remove-cmd
-                          :args-spec (s/cat :id a-coe/int-like
+                          :args-spec (s/cat :id l-coe/int-like
                                             :system (s/keys :req-un [::database]))})

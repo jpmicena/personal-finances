@@ -1,7 +1,8 @@
 (ns personal-finances.cmd
-  (:require [clojure.string     :as string]
-            [clojure.spec.alpha :as s]
-            [personal-finances.controllers.account :as ctrl-acc]))
+  (:require [clojure.string                        :as string]
+            [clojure.spec.alpha                    :as s]
+            [personal-finances.controllers.account :as c-acc]
+            [personal-finances.controllers.entry   :as c-ent]))
 
 (s/def ::name (s/coll-of string?))
 (s/def ::fn   fn?)
@@ -9,9 +10,10 @@
 (s/def ::handler (s/keys :req [::name ::fn ::args-spec]))
 (s/def ::handler-list (s/coll-of ::handler))
 
-(def handlers [ctrl-acc/account-add-handler
-               ctrl-acc/account-list-handler
-               ctrl-acc/account-remove-handler])
+(def handlers [c-acc/account-add-handler
+               c-acc/account-list-handler
+               c-acc/account-remove-handler
+               c-ent/entry-add-handler])
 
 (defn- get-cmd-map
   "Mapping of existing commands"
