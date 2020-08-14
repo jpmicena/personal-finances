@@ -75,3 +75,8 @@
                           :fn account-remove-cmd
                           :args-spec (s/cat :id l-coe/int-like
                                             :system (s/keys :req-un [::database]))})
+
+(comment
+(require '[personal-finances.main :refer [system]])
+(add-account "inflow" "teste" m-acc/categories (:database system))
+)
