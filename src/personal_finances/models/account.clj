@@ -1,7 +1,7 @@
 (ns personal-finances.models.account
   (:require [next.jdbc.sql :as sql]))
 
-(def categories #{"asset" "liability" "income" "expense"})
+(def categories #{"asset" "liability" "inflow" "expense"})
 
 (defn insert-account!
   [acc db-conn]
