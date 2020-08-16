@@ -25,6 +25,13 @@
             (get (keyword "last_insert_rowid()")))}
        (catch Exception e {:failure (ex-message e)}))))
 
+(defn- list-entries
+  [limit db]
+  (let [db-conn (db)]
+    (try
+      {:success (take limit (m-ent/read-entries db-conn))}
+      (catch Exception e {:failure (ex-message e)}))))
+
 ;; Command logic (function + handler)
 
 (defn- entry-add-cmd
@@ -33,6 +40,13 @@
         result (add-entry increasing-account decreasing-account description coerced-value post-date post-date (:database system))]
     (if-let [id (l-utl/success result)]
       (println "Entry added [ id:" id "]")
+      (println (:failure result)))))
+
+(defn- entry-list-cmd
+  [{:keys [system]}]
+  (let [result (list-entries 30 (:database system))]
+    (if-let [entries (l-utl/success result)]
+      (println (fmt/table entries))
       (println (:failure result)))))
 
 (def entry-add-handler
@@ -45,6 +59,11 @@
                                             :value              l-coe/double-like
                                             :system             (s/keys :req-un [::database]))})
 
+(def entry-list-handler
+  #:personal-finances.cmd{:name ["entry" "list"]
+                          :fn entry-list-cmd
+                          :args-spec (s/cat :system (s/keys :req-un [::database]))})
+
 (comment
 (require '[personal-finances.main :refer [system]])
 (add-entry "liability:teste" "liability:teste" "oi" 123.24 "2020-01-01" "2020-01-01" (:database system))
@@ -55,7 +74,7 @@
                 :value "210"
                 :system system})
 
-(-> (list-entries 4 (:database system)) :success println)
+(entry-list-cmd {:system system})
 )
 
 

@@ -13,7 +13,8 @@
 (def handlers [c-acc/account-add-handler
                c-acc/account-list-handler
                c-acc/account-remove-handler
-               c-ent/entry-add-handler])
+               c-ent/entry-add-handler
+               c-ent/entry-list-handler])
 
 (defn- get-cmd-map
   "Mapping of existing commands"
