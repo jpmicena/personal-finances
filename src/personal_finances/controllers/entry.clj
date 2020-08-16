@@ -2,7 +2,9 @@
   (:require [clojure.spec.alpha                    :as s]
             [personal-finances.models.entry        :as m-ent]
             [personal-finances.controllers.account :as c-acc]
-            [personal-finances.logic.coercion      :as l-coe]))
+            [personal-finances.logic.coercion      :as l-coe]
+            [personal-finances.logic.utils         :as l-utl]
+            [personal-finances.format              :as fmt]))
 
 ;; TODO: better error message when it doesn't find the account
 
@@ -18,10 +20,9 @@
                  :post_date post-date
                  :due_date due-date}]
   (try {:success
-        (str
-          "Entry added. id: " (-> entry
-                                  (m-ent/insert-entry! db-conn)
-                                  (get (keyword "last_insert_rowid()"))))}
+        (-> entry
+            (m-ent/insert-entry! db-conn)
+            (get (keyword "last_insert_rowid()")))}
        (catch Exception e {:failure (ex-message e)}))))
 
 ;; Command logic (function + handler)
@@ -30,7 +31,9 @@
   [{:keys [increasing-account decreasing-account post-date description value system]}]
   (let [coerced-value (l-coe/double-like value)
         result (add-entry increasing-account decreasing-account description coerced-value post-date post-date (:database system))]
-    (-> result first val println)))
+    (if-let [id (l-utl/success result)]
+      (println "Entry added [ id:" id "]")
+      (println (:failure result)))))
 
 (def entry-add-handler
   #:personal-finances.cmd{:name ["entry" "add"]
@@ -51,6 +54,8 @@
                 :description "oile"
                 :value "210"
                 :system system})
+
+(-> (list-entries 4 (:database system)) :success println)
 )
 
 
