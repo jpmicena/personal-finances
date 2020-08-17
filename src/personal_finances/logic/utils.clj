@@ -17,3 +17,8 @@
       (println (success-fn sr))
       (println (:failure result))))
 
+(defn update-if-exists
+  [m k f]
+  (if (contains? m k)
+    (update m k f)
+    m))

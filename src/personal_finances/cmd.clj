@@ -14,7 +14,8 @@
                c-acc/account-list-handler
                c-acc/account-remove-handler
                c-ent/entry-add-handler
-               c-ent/entry-list-handler])
+               c-ent/entry-list-handler
+               c-ent/balances-handler])
 
 (defn- get-cmd-map
   "Mapping of existing commands"

@@ -1,6 +1,7 @@
-(ns persona-finances.logic.balances)
+(ns personal-finances.logic.calculations)
 
 (defn balances
+  "Gets a full list of entries, return balances from all accounts"
   [entries]
   (->> entries
        (reduce (fn

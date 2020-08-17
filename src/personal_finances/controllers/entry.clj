@@ -4,6 +4,7 @@
             [personal-finances.controllers.account :as c-acc]
             [personal-finances.logic.coercion      :as l-coe]
             [personal-finances.logic.utils         :as l-utl]
+            [personal-finances.logic.calculations  :as l-cal]
             [personal-finances.format              :as fmt]))
 
 ;; TODO: better error message when it doesn't find the account
@@ -26,11 +27,18 @@
        (catch Exception e {:failure (ex-message e)}))))
 
 (defn- list-entries
-  [limit db]
-  (let [db-conn (db)]
-    (try
-      {:success (take limit (m-ent/read-entries db-conn))}
-      (catch Exception e {:failure (ex-message e)}))))
+  ([db]
+   (let [db-conn (db)]
+     (try
+       {:success (m-ent/read-entries db-conn)}
+       (catch Exception e {:failure (ex-message e)}))))
+  ([limit db]
+   (l-utl/update-if-exists (list-entries db) :success (partial take limit))))
+
+(defn- get-balances
+  [db]
+  (let [entries (list-entries db)]
+    (l-utl/update-if-exists entries :success l-cal/balances)))
 
 ;; Command logic (function + handler)
 
@@ -43,6 +51,11 @@
 (defn- entry-list-cmd
   [{:keys [system]}]
   (let [result (list-entries 30 (:database system))]
+    (l-utl/print-result fmt/table result)))
+
+(defn- balances-cmd
+  [{:keys [system]}]
+  (let [result (get-balances (:database system))]
     (l-utl/print-result fmt/table result)))
 
 (def entry-add-handler
@@ -60,6 +73,11 @@
                           :fn entry-list-cmd
                           :args-spec (s/cat :system (s/keys :req-un [::database]))})
 
+(def balances-handler
+  #:personal-finances.cmd{:name ["balances"]
+                          :fn balances-cmd
+                          :args-spec (s/cat :system (s/keys :req-un [::database]))})
+
 (comment
 (require '[personal-finances.main :refer [system]])
 (add-entry "liability:teste" "liability:teste" "oi" 123.24 "2020-01-01" "2020-01-01" (:database system))
@@ -71,6 +89,10 @@
                 :system system})
 
 (entry-list-cmd {:system system})
+
+(list-entries 2 (:database system))
+
+(get-balances (:database system))
 )
 
 
