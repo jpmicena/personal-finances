@@ -21,9 +21,11 @@
 (defn read-entries
   ([db-conn]
    (read-entries min-date max-date db-conn))
+  ;; Quering per date exist, but shouldn't be necessary (not a lot of data)
   ([start-date end-date db-conn]
   (sql/query
     db-conn [read-entries-query start-date end-date])))
+
 
 (comment
 (require '[personal-finances.main :refer [system]])
@@ -37,7 +39,6 @@
 (insert-entry! example-entry ((:database system)))
 (delete-entry! 3 ((:database system)))
 (read-entries "2020-08-03" "2020-08-04" ((:database system)))
-(read-entries ((:database system)))
+(defn entries-mock [] (read-entries ((:database system))))
+(entries-mock)
 )
-
-

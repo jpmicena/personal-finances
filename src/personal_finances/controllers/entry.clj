@@ -38,16 +38,12 @@
   [{:keys [increasing-account decreasing-account post-date description value system]}]
   (let [coerced-value (l-coe/double-like value)
         result (add-entry increasing-account decreasing-account description coerced-value post-date post-date (:database system))]
-    (if-let [id (l-utl/success result)]
-      (println "Entry added [ id:" id "]")
-      (println (:failure result)))))
+    (l-utl/print-result #(str "Entry added [id: " % "]") result)))
 
 (defn- entry-list-cmd
   [{:keys [system]}]
   (let [result (list-entries 30 (:database system))]
-    (if-let [entries (l-utl/success result)]
-      (println (fmt/table entries))
-      (println (:failure result)))))
+    (l-utl/print-result fmt/table result)))
 
 (def entry-add-handler
   #:personal-finances.cmd{:name ["entry" "add"]
