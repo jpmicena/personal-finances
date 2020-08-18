@@ -7,14 +7,6 @@
       io/file
       slurp))
 
-(def ^:private read-future-entries-query
-  (-> "resources/queries/read-future-entries.sql"
-      io/file
-      slurp))
-
-(def ^:private min-date "2000-01-01")
-(def ^:private max-date "2099-12-31")
-
 (defn insert-entry!
   [entry db-conn]
   (sql/insert! db-conn :entry entry))
@@ -24,17 +16,9 @@
   (sql/delete! db-conn :entry {:id entry-id}))
 
 (defn read-entries
-  ([db-conn]
-   (read-entries min-date max-date db-conn))
-  ;; Quering per date exist, but shouldn't be necessary (not a lot of data)
-  ([start-date end-date db-conn]
-  (sql/query
-    db-conn [read-entries-query start-date end-date])))
-
-(defn read-future-entries
  [db-conn]
   (sql/query
-    db-conn [read-future-entries-query]))
+    db-conn [read-entries-query]))
 
 (comment
 (require '[personal-finances.main :refer [system]])
@@ -47,7 +31,5 @@
                     })
 (insert-entry! example-entry ((:database system)))
 (delete-entry! 3 ((:database system)))
-(read-entries "2020-08-03" "2020-08-04" ((:database system)))
-(defn entries-mock [] (read-entries ((:database system))))
-(entries-mock)
+(read-entries ((:database system)))
 )

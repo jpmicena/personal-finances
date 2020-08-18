@@ -1,6 +1,7 @@
 (ns personal-finances.controllers.entry
   (:require [clojure.spec.alpha                    :as s]
             [personal-finances.models.entry        :as m-ent]
+            [personal-finances.models.account      :as m-acc]
             [personal-finances.controllers.account :as c-acc]
             [personal-finances.logic.coercion      :as l-coe]
             [personal-finances.logic.utils         :as l-utl]
@@ -10,7 +11,7 @@
 ;; TODO: better error message when it doesn't find the account
 
 (defn- add-entry
-  [increasing-account decreasing-account description value post-date due-date db]
+  [increasing-account decreasing-account description value entry-date post-date db]
   (let [db-conn (db)
         i-acc   (-> increasing-account l-coe/account-like (c-acc/get-account db) :success :account/id)
         d-acc   (-> decreasing-account l-coe/account-like (c-acc/get-account db) :success :account/id)
@@ -18,8 +19,8 @@
                  :decreasing_account_id d-acc
                  :description description
                  :value value
-                 :post_date post-date
-                 :due_date due-date}]
+                 :entry_date entry-date
+                 :post_date post-date}]
   (try {:success
         (-> entry
             (m-ent/insert-entry! db-conn)
@@ -30,17 +31,17 @@
   ([db]
    (let [db-conn (db)]
      (try
-       {:success (m-ent/read-entries db-conn)}
+       {:success (->> (m-ent/read-entries db-conn)
+                      (map (fn [{:keys [account/increasing_account_category
+                                        account/increasing_account_name
+                                        account/decreasing_account_category
+                                        account/decreasing_account_name] :as entry}]
+                             (assoc entry
+                                    :increasing_account (m-acc/account increasing_account_category increasing_account_name)
+                                    :decreasing_account (m-acc/account decreasing_account_category decreasing_account_name)))))}
        (catch Exception e {:failure (ex-message e)}))))
   ([limit db]
    (l-utl/update-if-exists (list-entries db) :success (partial take limit))))
-
-(defn- list-future-entries
-  [db]
-  (let [db-conn (db)]
-    (try
-      {:success (m-ent/read-future-entries db-conn)}
-      (catch Exception e {:failure (ex-message e)}))))
 
 (defn- get-balances
   [db]
@@ -55,20 +56,9 @@
         result (add-entry increasing-account decreasing-account description coerced-value post-date post-date (:database system))]
     (l-utl/print-result #(str "Entry added [id: " % "]") result)))
 
-(defn- entry-future-add-cmd
-  [{:keys [due-date increasing-account decreasing-account description value system]}]
-  (let [coerced-value (l-coe/double-like value)
-        result (add-entry increasing-account decreasing-account description coerced-value nil due-date (:database system))]
-    (l-utl/print-result #(str "(Future) Entry added [id: " % "]") result)))
-
 (defn- entry-list-cmd
   [{:keys [system]}]
   (let [result (list-entries 30 (:database system))]
-    (l-utl/print-result fmt/table result)))
-
-(defn- entry-future-list-cmd
-  [{:keys [system]}]
-  (let [result (list-future-entries (:database system))]
     (l-utl/print-result fmt/table result)))
 
 (defn- balances-cmd
@@ -86,24 +76,9 @@
                                             :value              l-coe/double-like
                                             :system             (s/keys :req-un [::database]))})
 
-(def entry-future-add-handler
-  #:personal-finances.cmd{:name ["entry" "future" "add"]
-                          :fn entry-future-add-cmd
-                          :args-spec (s/cat :due-date           l-coe/date-like
-                                            :increasing-account l-coe/account-like
-                                            :decreasing-account l-coe/account-like
-                                            :description        string?
-                                            :value              l-coe/double-like
-                                            :system             (s/keys :req-un [::database]))})
-
 (def entry-list-handler
   #:personal-finances.cmd{:name ["entry" "list"]
                           :fn entry-list-cmd
-                          :args-spec (s/cat :system (s/keys :req-un [::database]))})
-
-(def entry-future-list-handler
-  #:personal-finances.cmd{:name ["entry" "future" "list"]
-                          :fn entry-future-list-cmd
                           :args-spec (s/cat :system (s/keys :req-un [::database]))})
 
 (def balances-handler
@@ -113,9 +88,9 @@
 
 (comment
 (require '[personal-finances.main :refer [system]])
-(add-entry "liability:teste" "liability:teste" "oi" 123.24 "2020-01-01" "2020-01-01" (:database system))
-(entry-add-cmd {:increasing-account "liability:teste"
-                :decreasing-account "liability:teste"
+(add-entry "liability:teste2" "liability:teste" "oi" 123.24 "2020-01-01" "2020-01-01" (:database system))
+(entry-add-cmd {:increasing-account "asset:teste2"
+                :decreasing-account "liability:teste2"
                 :post-date "2020-01-01"
                 :description "oile"
                 :value "210"

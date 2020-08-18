@@ -27,10 +27,11 @@ If you sum the balances of all accounts, it should always be zero.
   - ~~Basic component system layed out~~
   - ~~Interface for adding commands (using clj spec)~~
   - ~~Account interaction (add, remove, list)~~
-  - Entry interaction (add, remove, list)
+  - ~~Basic entry interaction (add, remove, list)~~
   - Credit card bills (attach entries, control payments, etc.)
   - Routines (fixed payments, execute future entries, etc.)
   - txt inputs (for instance, executing multiple commands)
   - Add constraints on foreign keys (e. g., block account deletion if there's an entry associated)
   - Use `spec coerce` lib to coerce cmd arguments
   - Create helpers to format command returns
+  - standardize the way I treat accounts as category:name (on account controllers)

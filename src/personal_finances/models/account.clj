@@ -3,6 +3,10 @@
 
 (def categories #{"asset" "liability" "inflow" "expense"})
 
+(defn account
+  [category name]
+  (str category ":" name))
+
 (defn insert-account!
   [acc db-conn]
   (sql/insert! db-conn :account acc))
@@ -23,7 +27,7 @@
 
 (comment
 (require '[personal-finances.main :refer [system]])
-(def example-account {:category "liability"
+(def example-account {:category "asset"
                       :name     "teste2"})
 (insert-account! example-account ((:database system)))
 (insert-account! (dissoc example-account :name) ((:database system)))
