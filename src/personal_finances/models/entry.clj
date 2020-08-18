@@ -7,6 +7,11 @@
       io/file
       slurp))
 
+(def ^:private read-future-entries-query
+  (-> "resources/queries/read-future-entries.sql"
+      io/file
+      slurp))
+
 (def ^:private min-date "2000-01-01")
 (def ^:private max-date "2099-12-31")
 
@@ -26,6 +31,10 @@
   (sql/query
     db-conn [read-entries-query start-date end-date])))
 
+(defn read-future-entries
+ [db-conn]
+  (sql/query
+    db-conn [read-future-entries-query]))
 
 (comment
 (require '[personal-finances.main :refer [system]])

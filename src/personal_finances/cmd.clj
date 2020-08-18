@@ -14,7 +14,9 @@
                c-acc/account-list-handler
                c-acc/account-remove-handler
                c-ent/entry-add-handler
+               c-ent/entry-future-add-handler
                c-ent/entry-list-handler
+               c-ent/entry-future-list-handler
                c-ent/balances-handler])
 
 (defn- get-cmd-map
@@ -36,7 +38,7 @@
             cmd       (get-in cmd-map parsing)]
         (cond (s/valid? ::handler cmd)  [cmd (rest to-parse)]
               (nil? cmd)                (throw (Exception. "Command not found")) ;; TODO: Replace with helper for not found commands
-              :else                     (recur parsing (rest tokens)))))))
+              :else                     (recur parsing (rest to-parse)))))))
 
 (defn- apply-cmd
   "Tries to apply the parsed-cmd, conforms args to args-spec"
@@ -56,4 +58,5 @@
       (println (ex-message e)))))
 
 (comment
-(parse-cmd! "account list"))
+(parse-cmd! "entry future add")
+)

@@ -35,6 +35,13 @@
   ([limit db]
    (l-utl/update-if-exists (list-entries db) :success (partial take limit))))
 
+(defn- list-future-entries
+  [db]
+  (let [db-conn (db)]
+    (try
+      {:success (m-ent/read-future-entries db-conn)}
+      (catch Exception e {:failure (ex-message e)}))))
+
 (defn- get-balances
   [db]
   (let [entries (list-entries db)]
@@ -43,14 +50,25 @@
 ;; Command logic (function + handler)
 
 (defn- entry-add-cmd
-  [{:keys [increasing-account decreasing-account post-date description value system]}]
+  [{:keys [post-date increasing-account decreasing-account description value system]}]
   (let [coerced-value (l-coe/double-like value)
         result (add-entry increasing-account decreasing-account description coerced-value post-date post-date (:database system))]
     (l-utl/print-result #(str "Entry added [id: " % "]") result)))
 
+(defn- entry-future-add-cmd
+  [{:keys [due-date increasing-account decreasing-account description value system]}]
+  (let [coerced-value (l-coe/double-like value)
+        result (add-entry increasing-account decreasing-account description coerced-value nil due-date (:database system))]
+    (l-utl/print-result #(str "(Future) Entry added [id: " % "]") result)))
+
 (defn- entry-list-cmd
   [{:keys [system]}]
   (let [result (list-entries 30 (:database system))]
+    (l-utl/print-result fmt/table result)))
+
+(defn- entry-future-list-cmd
+  [{:keys [system]}]
+  (let [result (list-future-entries (:database system))]
     (l-utl/print-result fmt/table result)))
 
 (defn- balances-cmd
@@ -61,9 +79,19 @@
 (def entry-add-handler
   #:personal-finances.cmd{:name ["entry" "add"]
                           :fn entry-add-cmd
-                          :args-spec (s/cat :increasing-account l-coe/account-like
+                          :args-spec (s/cat :post-date          l-coe/date-like
+                                            :increasing-account l-coe/account-like
                                             :decreasing-account l-coe/account-like
-                                            :post-date          l-coe/date-like
+                                            :description        string?
+                                            :value              l-coe/double-like
+                                            :system             (s/keys :req-un [::database]))})
+
+(def entry-future-add-handler
+  #:personal-finances.cmd{:name ["entry" "future" "add"]
+                          :fn entry-future-add-cmd
+                          :args-spec (s/cat :due-date           l-coe/date-like
+                                            :increasing-account l-coe/account-like
+                                            :decreasing-account l-coe/account-like
                                             :description        string?
                                             :value              l-coe/double-like
                                             :system             (s/keys :req-un [::database]))})
@@ -71,6 +99,11 @@
 (def entry-list-handler
   #:personal-finances.cmd{:name ["entry" "list"]
                           :fn entry-list-cmd
+                          :args-spec (s/cat :system (s/keys :req-un [::database]))})
+
+(def entry-future-list-handler
+  #:personal-finances.cmd{:name ["entry" "future" "list"]
+                          :fn entry-future-list-cmd
                           :args-spec (s/cat :system (s/keys :req-un [::database]))})
 
 (def balances-handler
@@ -87,12 +120,7 @@
                 :description "oile"
                 :value "210"
                 :system system})
-
 (entry-list-cmd {:system system})
-
 (list-entries 2 (:database system))
-
 (get-balances (:database system))
 )
-
-
