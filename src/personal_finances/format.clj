@@ -8,5 +8,11 @@
         size (-> printable-table (string/split #"\n") second count)]
     (str printable-table (apply str (repeat size "-")))))
 
+(defn balances-table
+  [summ]
+  (->> summ
+       (map #(select-keys % [:account/category :account/name :account/balance]))
+       table))
+
 
 

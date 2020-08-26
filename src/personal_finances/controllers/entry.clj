@@ -43,10 +43,11 @@
   ([limit db]
    (l-utl/update-if-exists (list-entries db) :success (partial take limit))))
 
-(defn- get-balances
-  [db]
-  (let [entries (list-entries db)]
-    (l-utl/update-if-exists entries :success l-cal/balances)))
+(defn- list-balances
+  [entries]
+    (l-utl/update-if-exists entries
+                            :success
+                            #(->> % l-cal/accounts-summary l-cal/add-balances)))
 
 ;; Command logic (function + handler)
 
@@ -63,8 +64,9 @@
 
 (defn- balances-cmd
   [{:keys [system]}]
-  (let [result (get-balances (:database system))]
-    (l-utl/print-result fmt/table result)))
+  (let [entries (list-entries (:database system))
+        result  (list-balances entries)]
+    (l-utl/print-result fmt/balances-table result)))
 
 (def entry-add-handler
   #:personal-finances.cmd{:name ["entry" "add"]
@@ -91,11 +93,11 @@
 (add-entry "liability:teste2" "liability:teste" "oi" 123.24 "2020-01-01" "2020-01-01" (:database system))
 (entry-add-cmd {:increasing-account "asset:teste2"
                 :decreasing-account "liability:teste2"
-                :post-date "2020-01-01"
+                :post-date "2020-01-02"
                 :description "oile"
-                :value "210"
+                :value "250"
                 :system system})
 (entry-list-cmd {:system system})
-(list-entries 2 (:database system))
-(get-balances (:database system))
+(list-entries (:database system))
+(balances-cmd {:system system})
 )
